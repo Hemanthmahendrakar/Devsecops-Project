@@ -9,11 +9,6 @@ pipeline {
 
         IMAGE_TAG = "${BUILD_NUMBER}"
     }
-
-    tools {
-        jdk 'jdk17'
-    }
-
     stages {
 
         stage('Checkout Source') {
