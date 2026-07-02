@@ -9,6 +9,7 @@ pipeline {
 
         IMAGE_TAG = "${BUILD_NUMBER}"
     }
+
     stages {
 
         stage('Checkout Source') {
@@ -55,6 +56,7 @@ pipeline {
                 sh '''
                 docker build \
                 -t ${EXPENSE_IMAGE}:${IMAGE_TAG} \
+                -t ${EXPENSE_IMAGE}:latest \
                 -f Expense-Tracker-with-Analytics-Dashboard/Dockerfile \
                 Expense-Tracker-with-Analytics-Dashboard
                 '''
@@ -74,6 +76,7 @@ pipeline {
                 sh '''
                 docker build \
                 -t ${DIGITAL_IMAGE}:${IMAGE_TAG} \
+                -t ${DIGITAL_IMAGE}:latest \
                 -f Digital-twin-of-expense-tracker/Dockerfile \
                 Digital-twin-of-expense-tracker
                 '''
@@ -100,7 +103,10 @@ pipeline {
                     echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 
                     docker push ${EXPENSE_IMAGE}:${IMAGE_TAG}
+                    docker push ${EXPENSE_IMAGE}:latest
+
                     docker push ${DIGITAL_IMAGE}:${IMAGE_TAG}
+                    docker push ${DIGITAL_IMAGE}:latest
 
                     docker logout
                     '''
@@ -108,6 +114,17 @@ pipeline {
             }
         }
 
+        stage('Cleanup Local Images') {
+            steps {
+                sh '''
+                docker image rm ${EXPENSE_IMAGE}:${IMAGE_TAG} || true
+                docker image rm ${EXPENSE_IMAGE}:latest || true
+
+                docker image rm ${DIGITAL_IMAGE}:${IMAGE_TAG} || true
+                docker image rm ${DIGITAL_IMAGE}:latest || true
+                '''
+            }
+        }
     }
 
     post {
@@ -117,11 +134,18 @@ pipeline {
         }
 
         success {
-            echo 'CI Pipeline Completed Successfully'
+            echo "=========================================="
+            echo " DevSecOps CI Pipeline Completed Successfully "
+            echo " Expense Tracker Image Pushed Successfully"
+            echo " Digital Twin Image Pushed Successfully"
+            echo "=========================================="
         }
 
         failure {
-            echo 'Pipeline Failed'
+            echo "=========================================="
+            echo " DevSecOps Pipeline Failed"
+            echo " Check Console Output"
+            echo "=========================================="
         }
     }
 }
