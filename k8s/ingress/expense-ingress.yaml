@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: expense-ingress
+  namespace: expense-system
+
+spec:
+  ingressClassName: nginx
+
+  rules:
+  - http:
+      paths:
+
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: expense-service
+            port:
+              number: 5000
+
+      - path: /digital-twin
+        pathType: Prefix
+        backend:
+          service:
+            name: digital-twin-service
+            port:
+              number: 5001

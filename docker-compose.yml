@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+
+  mysql:
+    image: mysql:8
+    container_name: expense-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  expense-tracker:
+    build:
+      context: ./Expense-Tracker-with-Analytics-Dashboard
+    container_name: expense-tracker
+    ports:
+      - "5000:5000"
+    environment:
+      DB_HOST: mysql
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SECRET_KEY: ${SECRET_KEY}
+    depends_on:
+      - mysql
+
+  digital-twin:
+    build:
+      context: ./Digital-twin-of-expense-tracker
+    container_name: digital-twin
+    ports:
+      - "5001:5001"
+    environment:
+      DB_HOST: mysql
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
+    depends_on:
+      - mysql
+
+volumes:
+  mysql_data:

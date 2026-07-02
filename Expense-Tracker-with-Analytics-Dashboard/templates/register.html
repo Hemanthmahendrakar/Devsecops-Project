@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SpendLens — Create Account</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/static/css/auth.css"/>
+</head>
+<body>
+  <div class="auth-bg">
+    <div class="auth-glow"></div>
+    <div class="auth-card">
+      <div class="auth-brand">
+        <span class="brand-icon">◈</span>
+        <span class="brand-name">SpendLens</span>
+      </div>
+      <h1 class="auth-title">Create account</h1>
+      <p class="auth-sub">Start tracking your finances</p>
+
+      <div id="error-msg" class="error-banner" style="display:none"></div>
+
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="username" placeholder="choose a username"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="at least 6 characters"/>
+      </div>
+      <div class="form-group">
+        <label>Confirm password</label>
+        <input type="password" id="confirm" placeholder="repeat password"/>
+      </div>
+
+      <button class="btn-primary" id="reg-btn" onclick="doRegister()">Create account</button>
+
+      <p class="auth-link">Already have an account? <a href="/login">Sign in</a></p>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('keydown', e => { if (e.key === 'Enter') doRegister(); });
+    async function doRegister() {
+      const btn = document.getElementById('reg-btn');
+      const err = document.getElementById('error-msg');
+      err.style.display = 'none';
+      const pw = document.getElementById('password').value;
+      const cf = document.getElementById('confirm').value;
+      if (pw !== cf) { err.textContent = 'Passwords do not match'; err.style.display = 'block'; return; }
+      btn.textContent = 'Creating…'; btn.disabled = true;
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ username: document.getElementById('username').value, password: pw })
+      });
+      const data = await res.json();
+      if (res.ok) { window.location = '/'; }
+      else {
+        err.textContent = data.error; err.style.display = 'block';
+        btn.textContent = 'Create account'; btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

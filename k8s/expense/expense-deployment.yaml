@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: expense-tracker
+  namespace: expense-system
+  labels:
+    app: expense-tracker
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: expense-tracker
+
+  template:
+    metadata:
+      labels:
+        app: expense-tracker
+
+    spec:
+      containers:
+      - name: expense-tracker
+
+        image: hemanthkumarm3/devsecopsexpense-tracker:v1
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 5000
+
+        env:
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: expense-config
+              key: DB_HOST
+
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: expense-config
+              key: DB_NAME
+
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: expense-secret
+              key: DB_USER
+
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: expense-secret
+              key: DB_PASSWORD
+
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: expense-secret
+              key: SECRET_KEY
+
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+
+          limits:
+            cpu: "300m"
+            memory: "256Mi"
+
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 15
+
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 10

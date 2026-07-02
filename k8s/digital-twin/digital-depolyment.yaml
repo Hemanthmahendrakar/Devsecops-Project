@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: digital-twin
+  namespace: expense-system
+  labels:
+    app: digital-twin
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: digital-twin
+
+  template:
+    metadata:
+      labels:
+        app: digital-twin
+
+    spec:
+      containers:
+      - name: digital-twin
+
+        image: hemanthkumarm3/devsecops-digital-twin-of-expense-tracker:v1
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 5001
+
+        env:
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: digital-config
+              key: DB_HOST
+
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: digital-config
+              key: DB_NAME
+
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: digital-secret
+              key: DB_USER
+
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: digital-secret
+              key: DB_PASSWORD
+
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: digital-secret
+              key: SECRET_KEY
+
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+
+          limits:
+            cpu: "300m"
+            memory: "256Mi"
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5001
+          initialDelaySeconds: 30
+          periodSeconds: 15
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5001
+          initialDelaySeconds: 10
+          periodSeconds: 10

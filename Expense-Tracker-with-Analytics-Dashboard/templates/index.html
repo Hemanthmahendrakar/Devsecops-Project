@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SpendLens</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">◈</span>
+      <span class="brand-name">SpendLens</span>
+    </div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Overview</span>
+      <button class="nav-item active" data-panel="dashboard" onclick="showPanel('dashboard',this)">
+        <span class="nav-icon">▦</span> Dashboard
+      </button>
+      <button class="nav-item" data-panel="analytics" onclick="showPanel('analytics',this)">
+        <span class="nav-icon">◎</span> Analytics
+      </button>
+      <button class="nav-item" data-panel="trends" onclick="showPanel('trends',this)">
+        <span class="nav-icon">⟡</span> Trends
+      </button>
+
+      <span class="nav-section-label">Money</span>
+      <button class="nav-item" data-panel="expenses" onclick="showPanel('expenses',this)">
+        <span class="nav-icon">↑</span> Expenses
+      </button>
+      <button class="nav-item" data-panel="income" onclick="showPanel('income',this)">
+        <span class="nav-icon">↓</span> Income
+      </button>
+      <button class="nav-item" data-panel="recurring" onclick="showPanel('recurring',this)">
+        <span class="nav-icon">↺</span> Recurring
+      </button>
+
+      <span class="nav-section-label">Settings</span>
+      <button class="nav-item" data-panel="budgets" onclick="showPanel('budgets',this)">
+        <span class="nav-icon">◧</span> Budgets
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <span class="user-name" id="user-name">{{ username }}</span>
+      </div>
+      <button class="nav-item" onclick="doLogout()" style="color:var(--danger);width:100%">
+        <span class="nav-icon">⊗</span> Sign out
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <main class="main-content">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="hamburger" id="hamburger" onclick="toggleSidebar()">☰</button>
+        <span class="topbar-title" id="topbar-title">Dashboard</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="theme-toggle-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+        <button class="btn btn-primary-sm" onclick="openExpenseModal()">+ Add expense</button>
+      </div>
+    </header>
+
+    <div class="page-body">
+
+      <!-- ── Dashboard panel ── -->
+      <div class="panel active" id="panel-dashboard">
+        <div class="summary-grid" id="summary-grid">
+          <div class="stat-card"><div class="stat-label">This month</div><div class="stat-value" id="s-month">—</div><div class="stat-sub">expenses</div></div>
+          <div class="stat-card" id="s-savings-card"><div class="stat-label">Net savings</div><div class="stat-value" id="s-savings">—</div><div class="stat-sub">income − expenses</div></div>
+          <div class="stat-card"><div class="stat-label">All-time spent</div><div class="stat-value" id="s-total">—</div><div class="stat-sub" id="s-count"></div></div>
+          <div class="stat-card"><div class="stat-label">Avg expense</div><div class="stat-value" id="s-avg">—</div><div class="stat-sub" id="s-topcat"></div></div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-title">Spending by category</div>
+            <div class="chart-wrap"><canvas id="chart-pie"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Monthly overview</div>
+            <div class="chart-wrap"><canvas id="chart-bar"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Expenses panel ── -->
+      <div class="panel" id="panel-expenses">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Expenses</div>
+            <div class="section-sub" id="expense-count-label"></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <a id="csv-export-btn" class="csv-export-btn" href="#" onclick="exportCSV(event)">⬇ CSV</a>
+            <button class="btn btn-primary-sm" onclick="openExpenseModal()">+ Add</button>
+          </div>
+        </div>
+
+        <div class="controls-bar">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="Search by title or note…" oninput="debouncedSearch()"/>
+          </div>
+          <select class="filter-select" id="cat-filter" onchange="loadExpenses(1)">
+            <option value="all">All categories</option>
+          </select>
+          <select class="filter-select" id="sort-select" onchange="loadExpenses(1)">
+            <option value="date-desc">Newest first</option>
+            <option value="date-asc">Oldest first</option>
+            <option value="amount-desc">Highest amount</option>
+            <option value="amount-asc">Lowest amount</option>
+          </select>
+        </div>
+
+        <div class="controls-bar" style="margin-top:-8px">
+          <div class="date-range">
+            <input type="date" id="start-date" onchange="loadExpenses(1)" placeholder="From"/>
+            <span class="date-range-sep">→</span>
+            <input type="date" id="end-date" onchange="loadExpenses(1)" placeholder="To"/>
+            <button class="btn btn-outline" onclick="clearDates()">✕ Clear</button>
+          </div>
+        </div>
+
+        <div id="expense-list" class="expense-list"></div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+
+      <!-- ── Income panel ── -->
+      <div class="panel" id="panel-income">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Income</div>
+            <div class="section-sub">Track what you earn</div>
+          </div>
+          <button class="btn btn-primary-sm" onclick="openIncomeModal()">+ Add income</button>
+        </div>
+
+        <div class="controls-bar">
+          <div class="date-range">
+            <input type="date" id="income-start-date" onchange="loadIncome(1)"/>
+            <span class="date-range-sep">→</span>
+            <input type="date" id="income-end-date" onchange="loadIncome(1)"/>
+            <button class="btn btn-outline" onclick="clearIncomeDates()">✕ Clear</button>
+          </div>
+        </div>
+
+        <div id="income-list" class="expense-list"></div>
+        <div class="pagination" id="income-pagination"></div>
+      </div>
+
+      <!-- ── Analytics panel ── -->
+      <div class="panel" id="panel-analytics">
+        <div class="section-header">
+          <div class="section-title">Analytics</div>
+        </div>
+
+        <div class="controls-bar">
+          <div class="date-range">
+            <input type="date" id="analytics-start" onchange="loadAnalytics()"/>
+            <span class="date-range-sep">→</span>
+            <input type="date" id="analytics-end" onchange="loadAnalytics()"/>
+            <button class="btn btn-outline" onclick="clearAnalyticsDates()">✕ Clear</button>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-title">Spending by category</div>
+            <div class="chart-wrap"><canvas id="chart-pie-2"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Monthly expenses vs income</div>
+            <div class="chart-wrap"><canvas id="chart-bar-2"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Trends panel ── -->
+      <div class="panel" id="panel-trends">
+        <div class="section-header">
+          <div class="section-title">Trend Insights</div>
+          <div class="section-sub">This month vs last month</div>
+        </div>
+        <div id="trends-list" class="insights-list"></div>
+      </div>
+
+      <!-- ── Budgets panel ── -->
+      <div class="panel" id="panel-budgets">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Monthly Budgets</div>
+            <div class="section-sub">Set limits per category</div>
+          </div>
+          <button class="btn btn-primary-sm" onclick="openBudgetModal()">+ Set budget</button>
+        </div>
+        <div id="budget-list" class="budget-list"></div>
+        <div id="budget-empty" class="empty-state" style="display:none">
+          <div class="empty-icon">◧</div>
+          <div class="empty-text">No budgets set yet. Add one to start tracking limits.</div>
+        </div>
+      </div>
+
+      <!-- ── Recurring panel ── -->
+      <div class="panel" id="panel-recurring">
+        <div class="section-header">
+          <div class="section-title">Recurring Items</div>
+          <div class="section-sub">Auto-tracked monthly entries</div>
+        </div>
+        <div class="recurring-grid">
+          <div>
+            <div class="recurring-section-title">↑ Expenses</div>
+            <div id="recurring-summary-exp" class="recurring-summary">
+              <span>Monthly total</span>
+              <span class="stat-value" id="rec-exp-total" style="font-size:14px">—</span>
+            </div>
+            <div id="recurring-exp-list" class="expense-list"></div>
+          </div>
+          <div>
+            <div class="recurring-section-title">↓ Income</div>
+            <div id="recurring-summary-inc" class="recurring-summary">
+              <span>Monthly total</span>
+              <span class="stat-value" id="rec-inc-total" style="font-size:14px;color:var(--success)">—</span>
+            </div>
+            <div id="recurring-inc-list" class="expense-list"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- page-body -->
+  </main>
+</div><!-- app-layout -->
+
+<!-- ── Add/Edit Expense Modal ── -->
+<div class="modal-backdrop" id="expense-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeExpenseModal()">✕</button>
+    <div class="modal-title" id="expense-modal-title">Add expense</div>
+
+    <div class="form-row">
+      <div class="field-group">
+        <label>Title *</label>
+        <input type="text" id="exp-title" placeholder="e.g. Grocery run"/>
+      </div>
+      <div class="field-group">
+        <label>Amount *</label>
+        <input type="number" id="exp-amount" placeholder="0.00" min="0.01" step="0.01"/>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="field-group">
+        <label>Category</label>
+        <select id="exp-category"></select>
+      </div>
+      <div class="field-group">
+        <label>Date</label>
+        <input type="date" id="exp-date"/>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Note (optional)</label>
+      <textarea id="exp-note" placeholder="Any details…"></textarea>
+    </div>
+
+    <label class="checkbox-row">
+      <input type="checkbox" id="exp-recurring"/>
+      <span>Recurring every month</span>
+    </label>
+
+    <div id="exp-error" class="error-banner" style="display:none"></div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeExpenseModal()">Cancel</button>
+      <button class="btn btn-primary-sm" id="exp-save-btn" onclick="saveExpense()">Save expense</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Add Income Modal ── -->
+<div class="modal-backdrop" id="income-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeIncomeModal()">✕</button>
+    <div class="modal-title">Add income</div>
+
+    <div class="form-row">
+      <div class="field-group">
+        <label>Title *</label>
+        <input type="text" id="inc-title" placeholder="e.g. Monthly salary"/>
+      </div>
+      <div class="field-group">
+        <label>Amount *</label>
+        <input type="number" id="inc-amount" placeholder="0.00" min="0.01" step="0.01"/>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="field-group">
+        <label>Source</label>
+        <select id="inc-source"></select>
+      </div>
+      <div class="field-group">
+        <label>Date</label>
+        <input type="date" id="inc-date"/>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Note (optional)</label>
+      <textarea id="inc-note" placeholder="Any details…"></textarea>
+    </div>
+
+    <label class="checkbox-row">
+      <input type="checkbox" id="inc-recurring"/>
+      <span>Recurring every month</span>
+    </label>
+
+    <div id="inc-error" class="error-banner" style="display:none"></div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeIncomeModal()">Cancel</button>
+      <button class="btn btn-primary-sm" onclick="saveIncome()">Save income</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Budget Modal ── -->
+<div class="modal-backdrop" id="budget-modal">
+  <div class="modal" style="max-width:360px">
+    <button class="modal-close" onclick="closeBudgetModal()">✕</button>
+    <div class="modal-title">Set monthly budget</div>
+
+    <div class="field-group">
+      <label>Category</label>
+      <select id="bud-category"></select>
+    </div>
+    <div class="field-group">
+      <label>Monthly limit</label>
+      <input type="number" id="bud-limit" placeholder="0.00" min="1" step="0.01"/>
+    </div>
+
+    <div id="bud-error" class="error-banner" style="display:none"></div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeBudgetModal()">Cancel</button>
+      <button class="btn btn-primary-sm" onclick="saveBudget()">Save budget</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: mysql-config
+  namespace: expense-system
+
+data:
+  MYSQL_DATABASE: expense_db
+  MYSQL_USER: expense_user
