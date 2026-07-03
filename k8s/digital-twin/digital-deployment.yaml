@@ -54,7 +54,7 @@ spec:
               name: digital-secret
               key: DB_PASSWORD
 
-        - name: SECRET_KEY
+        - name: FLASK_SECRET_KEY
           valueFrom:
             secretKeyRef:
               name: digital-secret
