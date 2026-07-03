@@ -58,7 +58,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: digital-secret
-              key: SECRET_KEY
+              key: FLASK_SECRET_KEY
 
         resources:
           requests:
