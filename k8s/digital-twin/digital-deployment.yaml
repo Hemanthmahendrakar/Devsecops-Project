@@ -23,7 +23,7 @@ spec:
       containers:
       - name: digital-twin
 
-        image: hemanthkumarm3/devsecops-digital-twin-of-expense-tracker:v1
+        image: hemanthkumarm3/digital-twin:latest
         imagePullPolicy: Always
 
         ports:
