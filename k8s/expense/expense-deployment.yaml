@@ -58,7 +58,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: expense-secret
-              key: FLASK_SECRET_KEY
+              key: SECRET_KEY
 
         resources:
           requests:
