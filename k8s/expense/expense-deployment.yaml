@@ -23,7 +23,7 @@ spec:
       containers:
       - name: expense-tracker
 
-        image: hemanthkumarm3/devsecopsexpense-tracker:v1
+        image: hemanthkumarm3/expense-tracker:latest
         imagePullPolicy: Always
 
         ports:
