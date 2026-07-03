@@ -276,14 +276,6 @@ def fetch_by_month(user_id: int, months_back: int = 12) -> list:
         rows = cur.fetchall()
     return [{"month": r["month"], "total": float(r["total"] or 0.0)} for r in rows]
 
-
-# ---------------------------------------------------------------------------
-# Health API
-# ---------------------------------------------------------------------------
-
-@app.route("/health")
-def health():
-    return {"status": "UP"}, 200
 # ---------------------------------------------------------------------------
 # Core recalculation flow (shared by the POST endpoint and could be called
 # by a scheduled job later)
