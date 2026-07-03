@@ -318,8 +318,7 @@ def index():
 
 @app.route("/health")
 def health():
-    """Liveness/readiness probe target for k8s. No auth, no DB calls."""
-    return jsonify({"status": "ok"}), 200
+    return "OK"
 
 
 @app.route("/api/avatar/status")
