@@ -22,7 +22,7 @@ if (loginForm) {
         showError(data.error || 'Login failed');
         return;
       }
-      window.location.href = '/';
+      window.location.href = '/index';
     } catch (err) {
       showError('Something went wrong. Please try again.');
     }
@@ -53,7 +53,7 @@ if (registerForm) {
         showError(data.error || 'Registration failed');
         return;
       }
-      window.location.href = '/';
+      window.location.href = '/index';
     } catch (err) {
       showError('Something went wrong. Please try again.');
     }
