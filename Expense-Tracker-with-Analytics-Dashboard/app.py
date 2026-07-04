@@ -156,7 +156,7 @@ def home():
     return render_template("home.html")
 
 
-@app.route("/")
+@app.route("/index")
 @page_login_required
 def index():
     return render_template("index.html", username=session.get("username"))
