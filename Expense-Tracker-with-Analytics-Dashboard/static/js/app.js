@@ -671,7 +671,7 @@ async function loadRecurring() {
 // ── Logout ──
 async function doLogout() {
   await api('/api/logout', 'POST');
-  window.location = '/home';
+  window.location = '/';
 }
 
 // ── Helpers ──
