@@ -40,11 +40,22 @@
       <button class="nav-item" data-panel="recurring" onclick="showPanel('recurring',this)">
         <span class="nav-icon">↺</span> Recurring
       </button>
-
+      
       <span class="nav-section-label">Settings</span>
       <button class="nav-item" data-panel="budgets" onclick="showPanel('budgets',this)">
         <span class="nav-icon">◧</span> Budgets
       </button>
+      <button class="nav-item" data-panel="budgets" onclick="showPanel('budgets',this)"></button>
+      <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.08);">
+
+      <a href="http://52.0.75.99:32001"
+        target="_blank"
+        class="nav-item"
+        style="text-decoration:none;">
+        <span class="nav-icon">🤖</span>
+        AI Digital Twin
+      </a>
+</button>
     </nav>
     <div class="sidebar-footer">
       <div class="user-chip">
@@ -66,6 +77,8 @@
       </div>
       <div class="topbar-actions">
         <button class="theme-toggle-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+        <button class="btn btn-primary-sm"
+        onclick="window.open('http://52.0.75.99:32001','_blank')">    🤖 AI Digital Twin</button>
         <button class="btn btn-primary-sm" onclick="openExpenseModal()">+ Add expense</button>
       </div>
     </header>
