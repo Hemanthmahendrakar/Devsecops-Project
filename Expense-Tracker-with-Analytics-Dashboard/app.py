@@ -237,7 +237,7 @@ def api_login():
 @app.route("/api/logout", methods=["POST"])
 def api_logout():
     session.clear()
-    return jsonify({"message": "Logged out successfully"})
+    return render_template("home.html")
 
 
 @app.route("/api/me")
