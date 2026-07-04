@@ -50,7 +50,7 @@
         })
       });
       const data = await res.json();
-      if (res.ok) { window.location = '/'; }
+      if (res.ok) { window.location = '/index'; }
       else {
         err.textContent = data.error; err.style.display = 'block';
         btn.textContent = 'Sign in'; btn.disabled = false;
