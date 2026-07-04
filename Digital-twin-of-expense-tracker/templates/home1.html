@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Digital Twin — SpendLens</title>
+<meta name="description" content="Your Digital Twin is a live avatar of your financial health, powered by the same SpendLens account — no separate setup."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy: #0F1629;
+  --slate: #1E2A45;
+  --slate2: #263352;
+  --indigo: #6366F1;
+  --indigo-light: #818CF8;
+  --lavender: #A5B4FC;
+  --white: #FFFFFF;
+  --text: #E2E8F0;
+  --muted: #94A3B8;
+  --border: rgba(45,212,191,0.2);
+  --success: #10B981;
+  --danger: #EF4444;
+  --teal: #2DD4BF;
+  --teal-light: #5EEAD4;
+  --teal-border: rgba(45,212,191,0.25);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--navy);
+  color: var(--text);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+a { color: inherit; }
+
+.wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 32px);
+}
+
+/* ── Nav ───────────────────────────────────────── */
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(15,22,41,0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav .wrap {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.brand { flex-wrap: wrap; row-gap: 6px; }
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-icon {
+  font-size: 22px;
+  color: var(--teal);
+  line-height: 1;
+}
+
+.brand-name {
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  font-size: 17px;
+  color: var(--white);
+  letter-spacing: -0.02em;
+}
+
+.brand-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--teal-light);
+  background: rgba(45,212,191,0.12);
+  padding: 3px 9px;
+  border-radius: 10px;
+  margin-left: 2px;
+}
+
+.dev-inline-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--teal-light);
+  border: 1px solid var(--teal-border);
+  padding: 5px 12px;
+  border-radius: 14px;
+  text-decoration: none;
+  margin-left: 6px;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.dev-inline-btn:hover {
+  background: rgba(45,212,191,0.15);
+  border-color: var(--teal);
+  transform: translateY(-1px);
+}
+
+/* ── Developer modal ──────────────────────────────── */
+
+.dev-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(15,22,41,0.75);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 60px 20px;
+  overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.dev-modal-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.dev-modal {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  background: var(--navy);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 36px;
+  transform: translateY(-24px) scale(0.97);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.dev-modal-overlay.open .dev-modal {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.dev-modal-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--slate);
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s, border-color 0.15s;
+}
+
+.dev-modal-close:hover { border-color: var(--teal); transform: rotate(90deg); }
+
+.dev-card {
+  background: linear-gradient(135deg, var(--slate), var(--slate2));
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 40px;
+}
+
+.dev-profile {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  flex-wrap: wrap;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 28px;
+}
+
+.dev-avatar {
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  background: var(--navy);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.dev-name { font-size: 24px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
+
+.dev-role {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--teal-light);
+  margin-bottom: 12px;
+}
+
+.dev-bio { color: var(--muted); font-size: 14.5px; max-width: 480px; margin-bottom: 16px; }
+
+.dev-links { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.dev-skills { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
+
+.dev-skill-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--teal-light);
+  background: rgba(45,212,191,0.1);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  border-radius: 16px;
+}
+
+.dev-projects { display: flex; flex-direction: column; gap: 14px; }
+
+.dev-project {
+  background: var(--navy);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dev-project h4 { font-size: 14.5px; color: var(--white); font-weight: 600; margin-bottom: 5px; }
+.dev-project p { font-size: 13px; color: var(--muted); max-width: 440px; }
+
+.dev-project-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--teal-light);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.dev-project-link:hover { text-decoration: underline; }
+
+@media (max-width: 560px) {
+  .dev-card { padding: 26px 22px; }
+  .dev-profile { flex-direction: column; text-align: center; }
+  .dev-links { justify-content: center; }
+  .dev-project { flex-direction: column; }
+}
+
+/* ── Header animations ────────────────────────────── */
+
+.brand-icon {
+  display: inline-block;
+  animation: iconFloat 3.2s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(10deg); }
+}
+
+.nav-link { position: relative; }
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 0;
+  height: 2px;
+  background: var(--teal-light);
+  transition: width 0.25s ease;
+}
+
+.nav-link:hover::after { width: 100%; }
+
+.btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.28), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.55s ease;
+}
+
+.btn:hover::before { left: 130%; }
+
+.btn:hover { transform: translateY(-2px); box-shadow: 0 10px 22px -10px rgba(45,212,191,0.5); }
+.btn:active { transform: translateY(0) scale(0.98); }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  margin-right: auto;
+  margin-left: 40px;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-link {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.nav-link:hover { color: var(--text); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, transform 0.1s, border-color 0.15s;
+}
+
+.btn:active { transform: scale(0.98); }
+.btn:focus-visible { outline: 2px solid var(--teal-light); outline-offset: 2px; }
+
+.btn-teal {
+  background: var(--teal);
+  color: var(--navy);
+  padding: 10px 18px;
+}
+.btn-teal:hover { background: var(--teal-light); }
+
+.btn-ghost-teal {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--teal-border);
+  padding: 9px 17px;
+}
+.btn-ghost-teal:hover { border-color: var(--teal); }
+
+.btn-lg { padding: 13px 26px; font-size: 15px; }
+
+/* ── Hero ──────────────────────────────────────── */
+
+.hero {
+  position: relative;
+  padding: 96px 0 110px;
+  overflow: hidden;
+}
+
+.hero-glow {
+  position: absolute;
+  width: 700px; height: 700px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(45,212,191,0.14) 0%, transparent 70%);
+  top: -220px; right: -160px;
+  pointer-events: none;
+}
+
+.hero .wrap {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 48px;
+  align-items: center;
+  position: relative;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--teal-light);
+  background: rgba(45,212,191,0.1);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 20px;
+  margin-bottom: 24px;
+  letter-spacing: 0.02em;
+}
+
+.eyebrow-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--teal);
+}
+
+.hero h1 {
+  font-size: clamp(28px, 4.6vw, 46px);
+  line-height: 1.15;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -0.02em;
+  margin-bottom: 20px;
+}
+
+.hero h1 em {
+  font-style: normal;
+  color: var(--teal-light);
+}
+
+.hero-sub {
+  font-size: 17px;
+  color: var(--muted);
+  max-width: 460px;
+  margin-bottom: 32px;
+}
+
+.hero-ctas {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 36px;
+  flex-wrap: wrap;
+}
+
+.hero-meta {
+  display: flex;
+  gap: 28px;
+  font-size: 13px;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+
+.hero-meta strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ── Hero visual: the twin avatar ────────────────── */
+
+.twin-card {
+  background: var(--slate);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 26px;
+  position: relative;
+  box-shadow: 0 30px 60px -20px rgba(0,0,0,0.5);
+  text-align: center;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.twin-orb {
+  width: 168px;
+  height: 168px;
+  margin: 6px auto 20px;
+  border-radius: 50%;
+  position: relative;
+  background: radial-gradient(circle at 35% 30%, var(--teal-light), var(--teal) 55%, #12796f 100%);
+  box-shadow: 0 0 0 1px var(--teal-border), 0 0 50px rgba(45,212,191,0.35);
+  animation: pulseOrb 4s ease-in-out infinite;
+}
+
+@keyframes pulseOrb {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 1px var(--teal-border), 0 0 50px rgba(45,212,191,0.35); }
+  50% { transform: scale(1.035); box-shadow: 0 0 0 1px var(--teal-border), 0 0 68px rgba(45,212,191,0.5); }
+}
+
+.twin-orb::after {
+  content: '';
+  position: absolute;
+  inset: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.25);
+}
+
+.twin-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.twin-eyes {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 14px;
+}
+
+.twin-eyes span {
+  display: block;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #0F1629;
+  transition: all 0.4s ease;
+}
+
+.twin-mouth {
+  width: 34px;
+  height: 16px;
+  border: 4px solid transparent;
+  border-bottom-color: #0F1629;
+  border-radius: 0 0 60px 60px;
+  transition: all 0.4s ease;
+}
+
+/* Happy mood: bright squint eyes, wide smile */
+.mood-happy .twin-eyes span {
+  width: 15px;
+  height: 8px;
+  border-radius: 15px 15px 0 0;
+  background: transparent;
+  border-top: 4px solid #0F1629;
+}
+
+.mood-happy .twin-mouth {
+  width: 48px;
+  height: 26px;
+  border-bottom-width: 5px;
+  border-radius: 0 0 70px 70px;
+}
+
+.mood-happy .twin-orb {
+  background: radial-gradient(circle at 35% 30%, #FDE68A, var(--teal-light) 55%, var(--teal) 100%);
+}
+
+.twin-status {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--teal-light);
+  background: rgba(45,212,191,0.12);
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.twin-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  text-align: left;
+}
+
+.tmetric {
+  background: var(--navy);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.tmetric-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.tmetric-value {
+  font-family: 'DM Mono', monospace;
+  font-size: 16px;
+  color: var(--white);
+  font-weight: 500;
+}
+
+/* ── Sections shared ──────────────────────────────── */
+
+section { padding: 88px 0; }
+
+.section-head {
+  max-width: 560px;
+  margin-bottom: 52px;
+}
+
+.section-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--teal-light);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.section-head h2 {
+  font-size: 32px;
+  color: var(--white);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 12px;
+}
+
+.section-head p {
+  color: var(--muted);
+  font-size: 15px;
+}
+
+/* ── Features ─────────────────────────────────────── */
+
+.features { border-top: 1px solid var(--border); }
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.feature-card {
+  background: var(--slate);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.feature-card:hover {
+  border-color: var(--teal);
+  transform: translateY(-3px);
+}
+
+.feature-icon {
+  width: 38px; height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: rgba(45,212,191,0.12);
+  color: var(--teal-light);
+  font-size: 17px;
+  margin-bottom: 16px;
+}
+
+.feature-card h3 { font-size: 15.5px; color: var(--white); font-weight: 600; margin-bottom: 8px; }
+.feature-card p { font-size: 13px; color: var(--muted); }
+
+/* ── How it works ─────────────────────────────────── */
+
+.steps { border-top: 1px solid var(--border); }
+
+.step-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+.step-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--teal-light);
+  border: 1px solid var(--border);
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.step h3 { font-size: 15.5px; color: var(--white); font-weight: 600; margin-bottom: 8px; }
+.step p { font-size: 13px; color: var(--muted); }
+
+/* ── Final CTA ────────────────────────────────────── */
+
+.cta-band { border-top: 1px solid var(--border); }
+
+.cta-card {
+  background: linear-gradient(135deg, var(--slate), var(--slate2));
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 56px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-card h2 { font-size: 28px; color: var(--white); font-weight: 700; margin-bottom: 12px; }
+.cta-card p { color: var(--muted); font-size: 15px; margin-bottom: 28px; }
+
+.cta-actions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* ── Footer ───────────────────────────────────────── */
+
+footer {
+  border-top: 1px solid var(--border);
+  padding: 32px 0;
+}
+
+footer .wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--muted);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+footer .brand-name { font-size: 14px; }
+
+/* ── Responsive ───────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .hero .wrap { grid-template-columns: 1fr 360px; gap: 32px; }
+}
+
+@media (max-width: 1000px) {
+  .feature-grid { grid-template-columns: repeat(2, 1fr); }
+  .step-list { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 860px) {
+  .hero .wrap { grid-template-columns: 1fr; }
+  .hero { padding: 48px 0 64px; }
+  .twin-card { max-width: 380px; }
+  .nav-links { display: none; }
+}
+
+@media (max-width: 700px) {
+  section { padding: 64px 0; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .step-list { grid-template-columns: 1fr; }
+  .cta-card { padding: 40px 26px; }
+}
+
+@media (max-width: 560px) {
+  .hero-ctas { flex-direction: column; align-items: stretch; }
+  .hero-meta { flex-direction: column; gap: 8px; }
+  .cta-actions { flex-direction: column; }
+  .nav-link.hide-mobile { display: none; }
+  .twin-orb { width: 140px; height: 140px; }
+  .twin-metrics { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 400px) {
+  .brand-name { font-size: 15px; }
+  .brand-tag { font-size: 10px; }
+  .dev-inline-btn { font-size: 11px; padding: 4px 9px; }
+  .twin-card { padding: 20px; }
+  .twin-orb { width: 120px; height: 120px; }
+  .cta-card h2 { font-size: 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .twin-orb { animation: none; }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="wrap">
+      <div class="brand">
+        <span class="brand-icon">◈</span>
+        <span class="brand-name">SpendLens</span>
+        <span class="brand-tag">Digital Twin</span>
+        <a href="#developer" class="dev-inline-btn" onclick="openDevModal(event)">Developer</a>
+      </div>
+      <div class="nav-actions">
+        <a href="{{ url_for('login_page') }}" class="btn btn-teal">Login</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-glow"></div>
+    <div class="wrap">
+      <div>
+        <span class="eyebrow"><span class="eyebrow-dot"></span>Same account, no extra setup</span>
+        <h1>Your finances, <em>given a face.</em></h1>
+        <p class="hero-sub">The Digital Twin is a living avatar of your money — it shifts color, mood, and shape as your spending, saving, and budgets change in real time.</p>
+        <div class="hero-ctas">
+          <a href="{{ url_for('login_page') }}" class="btn btn-teal btn-lg">See how it reflects you</a>
+          
+        </div>
+        <div class="hero-meta">
+          <span><strong>Live</strong> updates as you log entries</span>
+        </div>
+      </div>
+
+      <div class="twin-card mood-calm" id="twinCard" aria-hidden="true">
+        <span class="twin-status" id="twinStatus">● Calm — on budget</span>
+        <div class="twin-orb">
+          <div class="twin-face">
+            <div class="twin-eyes"><span></span><span></span></div>
+            <div class="twin-mouth"></div>
+          </div>
+        </div>
+        <div class="twin-metrics">
+          <div class="tmetric">
+            <div class="tmetric-label">Health score</div>
+            <div class="tmetric-value">82 / 100</div>
+          </div>
+          <div class="tmetric">
+            <div class="tmetric-label">Streak</div>
+            <div class="tmetric-value">14 days</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="features" id="reflects">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="section-eyebrow">How it reflects you</div>
+        <h2>One avatar, tuned to your actual numbers</h2>
+        <p>No new data to enter — the Twin reads the same ledger as your dashboard and turns it into something you can feel at a glance.</p>
+      </div>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">◉</div>
+          <h3>A live health score</h3>
+          <p>One number, built from your budgets and balances, that moves the moment your spending does.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">◐</div>
+          <h3>Mood that reacts instantly</h3>
+          <p>Calm, happy, tense, or alert — the Twin's color, face, and motion shift the second your numbers do.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">↺</div>
+          <h3>Streaks that build over time</h3>
+          <p>Every day you stay on budget adds to a visible streak, so consistency has something to show for it.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">◧</div>
+          <h3>A tint from your top category</h3>
+          <p>Whatever you spend most on this month colors the edge of your Twin, so patterns are easy to spot.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">✦</div>
+          <h3>Milestones you can see</h3>
+          <p>Hit a savings goal and the Twin visibly changes — a small reward for real progress.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⇄</div>
+          <h3>Synced automatically</h3>
+          <p>It's the same SpendLens account as your dashboard — nothing extra to set up or keep in sync.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="steps" id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="section-eyebrow">Getting started</div>
+        <h2>Three steps to meet your Twin</h2>
+      </div>
+      <div class="step-list">
+        <div class="step">
+          <div class="step-num">01</div>
+          <h3>Sign in to SpendLens</h3>
+          <p>Already tracking expenses? The Twin uses the same account — no new sign-up needed.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <h3>Open the Twin view</h3>
+          <p>Switch from your dashboard to the Twin any time to see the same data, shown differently.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <h3>Watch it respond</h3>
+          <p>Log an expense or hit a budget limit, and the Twin updates immediately — no refresh needed.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <div class="wrap">
+      <div class="cta-card">
+        <h2>See your money, differently.</h2>
+        <p>Your Twin is already there — it just needs your first entry.</p>
+        <div class="cta-actions">
+        <a href="http://52.0.75.99" class="btn btn-ghost-teal btn-lg">Back to SpendLens</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="dev-modal-overlay" id="devModalOverlay" onclick="if(event.target===this)closeDevModal()">
+    <div class="dev-modal">
+      <button class="dev-modal-close" onclick="closeDevModal()" aria-label="Close">×</button>
+      <div class="section-eyebrow">Behind SpendLens</div>
+      <h2 style="font-size:26px;color:var(--white);font-weight:700;margin-bottom:24px;">About the developer</h2>
+      <div class="dev-card">
+        <div class="dev-profile">
+          <!-- EDIT: replace this placeholder circle with your photo (see comment in the CSS above) -->
+          <div class="dev-avatar">Your<br/>photo</div>
+          <div>
+            <!-- EDIT: your name -->
+            <div class="dev-name">Your Name Here</div>
+            <!-- EDIT: your role / title -->
+            <div class="dev-role">Full-Stack Developer &amp; DevSecOps Engineer</div>
+            <!-- EDIT: a short bio, 2-3 sentences about you -->
+            <p class="dev-bio">Write a short bio here — who you are, what you build, and what you're focused on right now.</p>
+            <div class="dev-links">
+              <!-- EDIT: replace with your actual GitHub profile, LinkedIn, email, etc. -->
+              <a href="https://github.com/Hemanthmahendrakar" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--text);text-decoration:none;border:1px solid var(--border);padding:8px 14px;border-radius:8px;">GitHub ↗</a>
+              <a href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--text);text-decoration:none;border:1px solid var(--border);padding:8px 14px;border-radius:8px;">LinkedIn ↗</a>
+              <a href="mailto:you@example.com" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--text);text-decoration:none;border:1px solid var(--border);padding:8px 14px;border-radius:8px;">Email</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- EDIT: replace with your actual skills -->
+        <div class="dev-skills">
+          <span class="dev-skill-tag">JavaScript</span>
+          <span class="dev-skill-tag">Node.js</span>
+          <span class="dev-skill-tag">React</span>
+          <span class="dev-skill-tag">Docker</span>
+          <span class="dev-skill-tag">Kubernetes</span>
+          <span class="dev-skill-tag">CI/CD</span>
+          <span class="dev-skill-tag">AWS</span>
+          <span class="dev-skill-tag">DevSecOps</span>
+        </div>
+
+        <div class="dev-projects">
+          <div class="dev-project">
+            <div>
+              <h4>SpendLens</h4>
+              <!-- EDIT: describe your role/contribution on this project -->
+              <p>An expense and income tracker with category analytics, budgets, and a Digital Twin view of your financial health.</p>
+            </div>
+            <a href="home.html#ledger" class="dev-project-link">View dashboard ↗</a>
+          </div>
+          <div class="dev-project">
+            <div>
+              <h4>DevSecOps Project</h4>
+              <!-- EDIT: replace with your own description of this project -->
+              <p>A DevSecOps pipeline project — add a short description here of what it does and the security practices it covers.</p>
+            </div>
+            <a href="https://github.com/Hemanthmahendrakar/Devsecops-Project" class="dev-project-link" target="_blank" rel="noopener">View on GitHub ↗</a>
+          </div>
+          <!-- EDIT: duplicate a .dev-project block above to add more projects -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="wrap">
+      <span class="brand-name" style="font-family:'DM Mono',monospace;color:var(--text)">◈ SpendLens</span>
+      <span>© 2026 SpendLens. All rights reserved. Released under the MIT License.</span>
+    </div>
+  </footer>
+
+  <script>
+    function openDevModal(e) {
+      if (e) e.preventDefault();
+      document.getElementById('devModalOverlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+      history.pushState(null, null, '#developer');
+    }
+    function closeDevModal() {
+      document.getElementById('devModalOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+      history.pushState(null, null, window.location.pathname);
+    }
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeDevModal();
+    });
+    if (window.location.hash === '#developer') {
+      window.addEventListener('DOMContentLoaded', function () { openDevModal(); });
+    }
+
+    (function () {
+      var moods = [
+        { cls: 'mood-calm', label: '● Calm — on budget' },
+        { cls: 'mood-happy', label: '● Happy — on budget' }
+      ];
+      var idx = 0;
+      var card = document.getElementById('twinCard');
+      var status = document.getElementById('twinStatus');
+
+      function applyMood(i) {
+        moods.forEach(function (m) { card.classList.remove(m.cls); });
+        card.classList.add(moods[i].cls);
+        status.textContent = moods[i].label;
+      }
+
+      setInterval(function () {
+        idx = (idx + 1) % moods.length;
+        applyMood(idx);
+      }, 30000);
+    })();
+  </script>
+
+</body>
+</html>
