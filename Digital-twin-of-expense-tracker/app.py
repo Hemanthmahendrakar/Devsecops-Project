@@ -309,8 +309,12 @@ def recalculate_avatar_stats(user_id: int):
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
-
 @app.route("/")
+def home():
+    return render_template("home.html")
+
+
+@app.route("/index")
 @login_required
 def index():
     return render_template("index.html", username=session.get("username"))
