@@ -149,6 +149,13 @@ def page_login_required(f):
 # ---------------------------------------------------------------------------
 # Page routes
 # ---------------------------------------------------------------------------
+
+
+@app.route("/")
+def home():
+    return render_template("home.html")
+
+
 @app.route("/")
 @page_login_required
 def index():
@@ -157,15 +164,11 @@ def index():
 
 @app.route("/login")
 def login_page():
-    if "user_id" in session:
-        return redirect(url_for("index"))
     return render_template("login.html")
 
 
 @app.route("/register")
 def register_page():
-    if "user_id" in session:
-        return redirect(url_for("index"))
     return render_template("register.html")
 
 
