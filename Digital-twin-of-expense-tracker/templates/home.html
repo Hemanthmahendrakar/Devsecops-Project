@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SpendLens — Know where your money goes</title>
+<meta name="description" content="SpendLens tracks expenses and income, breaks spending down by category, and mirrors your financial health in a live Digital Twin."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy: #0F1629;
+  --slate: #1E2A45;
+  --slate2: #263352;
+  --indigo: #6366F1;
+  --indigo-light: #818CF8;
+  --lavender: #A5B4FC;
+  --white: #FFFFFF;
+  --text: #E2E8F0;
+  --muted: #94A3B8;
+  --border: rgba(99,102,241,0.2);
+  --success: #10B981;
+  --danger: #EF4444;
+  --teal: #2DD4BF;
+  --teal-light: #5EEAD4;
+  --teal-border: rgba(45,212,191,0.25);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--navy);
+  color: var(--text);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+a { color: inherit; }
+
+.wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+/* ── Nav ───────────────────────────────────────── */
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(15,22,41,0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav .wrap {
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-icon {
+  font-size: 22px;
+  color: var(--indigo);
+  line-height: 1;
+}
+
+.brand-name {
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  font-size: 17px;
+  color: var(--white);
+  letter-spacing: -0.02em;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  margin-right: auto;
+  margin-left: 40px;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-link {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.nav-link:hover { color: var(--text); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, transform 0.1s, border-color 0.15s;
+}
+
+.btn:active { transform: scale(0.98); }
+.btn:focus-visible { outline: 2px solid var(--indigo-light); outline-offset: 2px; }
+
+.btn-primary {
+  background: var(--indigo);
+  color: var(--white);
+  padding: 10px 18px;
+}
+.btn-primary:hover { background: var(--indigo-light); }
+
+.btn-teal {
+  background: var(--teal);
+  color: var(--navy);
+  padding: 10px 18px;
+}
+.btn-teal:hover { background: var(--teal-light); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 9px 17px;
+}
+.btn-ghost:hover { border-color: var(--indigo); }
+
+.btn-ghost-teal {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--teal-border);
+  padding: 9px 17px;
+}
+.btn-ghost-teal:hover { border-color: var(--teal); }
+
+.btn-lg { padding: 13px 26px; font-size: 15px; }
+
+/* ── Hero ──────────────────────────────────────── */
+
+.hero {
+  position: relative;
+  padding: 96px 0 110px;
+  overflow: hidden;
+}
+
+.hero-glow {
+  position: absolute;
+  width: 700px; height: 700px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,102,241,0.16) 0%, transparent 70%);
+  top: -220px; right: -160px;
+  pointer-events: none;
+}
+
+.hero .wrap {
+  display: grid;
+  grid-template-columns: 1fr 460px;
+  gap: 48px;
+  align-items: center;
+  position: relative;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--lavender);
+  background: rgba(99,102,241,0.1);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 20px;
+  margin-bottom: 24px;
+  letter-spacing: 0.02em;
+}
+
+.eyebrow-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+.hero h1 {
+  font-size: 48px;
+  line-height: 1.1;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -0.02em;
+  margin-bottom: 20px;
+}
+
+.hero h1 em {
+  font-style: normal;
+  color: var(--lavender);
+}
+
+.hero-sub {
+  font-size: 17px;
+  color: var(--muted);
+  max-width: 460px;
+  margin-bottom: 32px;
+}
+
+.hero-ctas {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 36px;
+  flex-wrap: wrap;
+}
+
+.hero-meta {
+  display: flex;
+  gap: 28px;
+  font-size: 13px;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+
+.hero-meta strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ── Hero visual: mock dashboard preview ─────────── */
+
+.preview-card {
+  background: var(--slate);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px;
+  position: relative;
+  box-shadow: 0 30px 60px -20px rgba(0,0,0,0.5);
+  animation: floatCard 6s ease-in-out infinite;
+}
+
+@keyframes floatCard {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.preview-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.preview-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.preview-pill {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--success);
+  background: rgba(16,185,129,0.12);
+  padding: 3px 9px;
+  border-radius: 12px;
+}
+
+.preview-pill.teal {
+  color: var(--teal-light);
+  background: rgba(45,212,191,0.12);
+}
+
+.preview-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.pstat {
+  background: var(--navy);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.pstat-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.pstat-value {
+  font-family: 'DM Mono', monospace;
+  font-size: 18px;
+  color: var(--white);
+  font-weight: 500;
+}
+
+.preview-charts {
+  display: grid;
+  grid-template-columns: 108px 1fr;
+  gap: 16px;
+  align-items: center;
+  background: var(--navy);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.donut {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--indigo) 0deg 130deg,
+    var(--lavender) 130deg 210deg,
+    var(--success) 210deg 275deg,
+    var(--slate2) 275deg 360deg
+  );
+  position: relative;
+}
+
+.donut::after {
+  content: '';
+  position: absolute;
+  inset: 16px;
+  border-radius: 50%;
+  background: var(--navy);
+}
+
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 7px;
+  height: 92px;
+}
+
+.bars i {
+  flex: 1;
+  display: block;
+  background: linear-gradient(180deg, var(--indigo-light), var(--indigo));
+  border-radius: 3px 3px 0 0;
+}
+
+.legend {
+  display: flex;
+  gap: 14px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.legend span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.legend i {
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+/* ── Sections shared ──────────────────────────────── */
+
+section { padding: 88px 0; }
+
+.section-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--indigo-light);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.section-eyebrow.teal { color: var(--teal-light); }
+
+.section-head {
+  max-width: 560px;
+  margin-bottom: 52px;
+}
+
+.section-head h2 {
+  font-size: 32px;
+  color: var(--white);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 12px;
+}
+
+.section-head p {
+  color: var(--muted);
+  font-size: 15px;
+}
+
+/* ── Features ─────────────────────────────────────── */
+
+.features { border-top: 1px solid var(--border); }
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.feature-card {
+  background: var(--slate);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.feature-card:hover {
+  border-color: var(--indigo);
+  transform: translateY(-3px);
+}
+
+.feature-card.twin:hover { border-color: var(--teal); }
+
+.feature-icon {
+  width: 38px; height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: rgba(99,102,241,0.12);
+  color: var(--indigo-light);
+  font-size: 17px;
+  margin-bottom: 16px;
+}
+
+.feature-icon.teal {
+  background: rgba(45,212,191,0.12);
+  color: var(--teal-light);
+}
+
+.feature-card h3 {
+  font-size: 15.5px;
+  color: var(--white);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.feature-card p {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ── Twin teaser ──────────────────────────────────── */
+
+.twin-teaser { border-top: 1px solid var(--teal-border); }
+
+.teaser-card {
+  background: linear-gradient(135deg, rgba(45,212,191,0.08), rgba(45,212,191,0.02));
+  border: 1px solid var(--teal-border);
+  border-radius: 16px;
+  padding: 32px 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.teaser-card h3 { font-size: 20px; color: var(--white); font-weight: 700; margin-bottom: 6px; }
+.teaser-card p { font-size: 14px; color: var(--muted); }
+
+
+/* ── How it works ─────────────────────────────────── */
+
+.steps { border-top: 1px solid var(--border); }
+
+.step-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+.step-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--lavender);
+  border: 1px solid var(--border);
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.step h3 {
+  font-size: 15.5px;
+  color: var(--white);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.step p {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ── Final CTA ────────────────────────────────────── */
+
+.cta-band { border-top: 1px solid var(--border); }
+
+.cta-card {
+  background: linear-gradient(135deg, var(--slate), var(--slate2));
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 56px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-card h2 {
+  font-size: 28px;
+  color: var(--white);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.cta-card p {
+  color: var(--muted);
+  font-size: 15px;
+  margin-bottom: 28px;
+}
+
+.cta-actions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* ── Footer ───────────────────────────────────────── */
+
+footer {
+  border-top: 1px solid var(--border);
+  padding: 32px 0;
+}
+
+footer .wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--muted);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+footer .brand-name { font-size: 14px; }
+
+/* ── Developer ────────────────────────────────────── */
+
+/* ── Developer modal ──────────────────────────────── */
+
+.dev-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(15,22,41,0.75);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 60px 20px;
+  overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.dev-modal-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.dev-modal {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  background: var(--navy);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 36px;
+  transform: translateY(-24px) scale(0.97);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.dev-modal-overlay.open .dev-modal {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.dev-modal-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--slate);
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s, border-color 0.15s;
+}
+
+.dev-modal-close:hover { border-color: var(--indigo); transform: rotate(90deg); }
+
+/* ── Header animations ────────────────────────────── */
+
+.brand-icon {
+  display: inline-block;
+  animation: iconFloat 3.2s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(10deg); }
+}
+
+.nav-link { position: relative; }
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 0;
+  height: 2px;
+  background: var(--indigo-light);
+  transition: width 0.25s ease;
+}
+
+.nav-link:hover::after { width: 100%; }
+
+.btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.28), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.55s ease;
+}
+
+.btn:hover::before { left: 130%; }
+
+.btn:hover { transform: translateY(-2px); box-shadow: 0 10px 22px -10px rgba(99,102,241,0.55); }
+.btn-ghost:hover, .btn-ghost-teal:hover { box-shadow: 0 10px 22px -12px rgba(99,102,241,0.35); }
+.btn:active { transform: translateY(0) scale(0.98); }
+
+.dev-card {
+  background: linear-gradient(135deg, var(--slate), var(--slate2));
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 40px;
+}
+
+.dev-profile {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  flex-wrap: wrap;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 28px;
+}
+
+.dev-avatar {
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  background: var(--navy);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* To use a real photo instead of the placeholder circle above,
+   replace the <div class="dev-avatar"> contents with:
+   <img src="/path/to/your-photo.jpg" alt="Your name" style="width:100%;height:100%;object-fit:cover;"> */
+
+.dev-name { font-size: 24px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
+
+.dev-role {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--indigo-light);
+  margin-bottom: 12px;
+}
+
+.dev-bio { color: var(--muted); font-size: 14.5px; max-width: 480px; margin-bottom: 16px; }
+
+.dev-links { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.dev-skills { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
+
+.dev-skill-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--lavender);
+  background: rgba(99,102,241,0.1);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  border-radius: 16px;
+}
+
+.dev-projects { display: flex; flex-direction: column; gap: 14px; }
+
+.dev-project {
+  background: var(--navy);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dev-project h4 { font-size: 14.5px; color: var(--white); font-weight: 600; margin-bottom: 5px; }
+.dev-project p { font-size: 13px; color: var(--muted); max-width: 440px; }
+
+.dev-project-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--indigo-light);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.dev-project-link:hover { text-decoration: underline; }
+
+@media (max-width: 560px) {
+  .dev-card { padding: 26px 22px; }
+  .dev-profile { flex-direction: column; text-align: center; }
+  .dev-links { justify-content: center; }
+  .dev-project { flex-direction: column; }
+}
+
+/* ── Responsive ───────────────────────────────────── */
+
+@media (max-width: 1000px) {
+  .feature-grid { grid-template-columns: repeat(2, 1fr); }
+  .step-list { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 860px) {
+  .hero .wrap { grid-template-columns: 1fr; }
+  .hero { padding: 56px 0 72px; }
+  .hero h1 { font-size: 34px; }
+  .preview-card { max-width: 460px; }
+  .nav-links { display: none; }
+}
+
+@media (max-width: 560px) {
+  .wrap { padding: 0 20px; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .step-list { grid-template-columns: 1fr; }
+  .hero-ctas { flex-direction: column; align-items: stretch; }
+  .hero-meta { flex-direction: column; gap: 8px; }
+  .cta-card { padding: 36px 22px; }
+  .cta-actions { flex-direction: column; }
+  .nav-link.hide-mobile { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preview-card { animation: none; }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="wrap">
+      <div class="brand">
+        <span class="brand-icon">◈</span>
+        <span class="brand-name">SpendLens</span>
+      </div>
+      <div class="nav-links">
+        <a href="#developer" class="nav-link" onclick="openDevModal(event)">Developer</a>
+      </div>
+      <div class="nav-actions">
+        
+        <a href="/login" class="nav-link hide-mobile">Sign in</a>
+        <a href="/register" class="btn btn-primary">Get started</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-glow"></div>
+    <div class="wrap">
+      <div>
+        <span class="eyebrow"><span class="eyebrow-dot"></span>Free to use — set up in under a minute</span>
+        <h1>Manage your <em>expenses</em> smarter.</h1>
+        <p class="hero-sub">Track your income, expenses, budgets and analytics in one secure dashboard.</p>
+        <div class="hero-ctas">
+          <a href="/login" class="btn btn-primary btn-lg">Explore the dashboard</a>
+        </div>
+        <div class="hero-meta">
+          <span><strong>7</strong> spend categories tracked</span>
+          <span><strong>1-click</strong> CSV export</span>
+          <span><strong>0</strong> setup fees</span>
+        </div>
+      </div>
+
+      <div class="preview-card" aria-hidden="true">
+        <div class="preview-head">
+          <span class="preview-title">This month</span>
+          <span class="preview-pill">On budget</span>
+        </div>
+        <div class="preview-stats">
+          <div class="pstat">
+            <div class="pstat-label">Spent</div>
+            <div class="pstat-value">$2,340</div>
+          </div>
+          <div class="pstat">
+            <div class="pstat-label">Net saved</div>
+            <div class="pstat-value">$860</div>
+          </div>
+        </div>
+        <div class="preview-charts">
+          <div class="donut"></div>
+          <div class="bars">
+            <i style="height:35%"></i>
+            <i style="height:55%"></i>
+            <i style="height:40%"></i>
+            <i style="height:70%"></i>
+            <i style="height:50%"></i>
+            <i style="height:85%"></i>
+          </div>
+        </div>
+        <div class="legend">
+          <span><i style="background:var(--indigo)"></i>Housing</span>
+          <span><i style="background:var(--lavender)"></i>Food</span>
+          <span><i style="background:var(--success)"></i>Savings</span>
+          <span><i style="background:var(--slate2)"></i>Other</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="features" id="ledger">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="section-eyebrow">The ledger</div>
+        <h2>Everything to track spend, minus the busywork</h2>
+        <p>One dashboard for the numbers, the trends behind them, and the categories eating your budget.</p>
+      </div>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">▦</div>
+          <h3>Dashboard overview</h3>
+          <p>This month's spend, net savings, all-time total, and your top category at a glance.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">◎</div>
+          <h3>Category analytics</h3>
+          <p>A live pie breakdown of spending by category, so you know exactly where each dollar landed.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⟡</div>
+          <h3>Monthly trends</h3>
+          <p>A bar view of spend by month, so you can spot a pattern before it becomes a habit.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">↑↓</div>
+          <h3>Expenses &amp; income</h3>
+          <p>Add, edit, or delete either side of the ledger — title, amount, category, date, note.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⌕</div>
+          <h3>Search &amp; filter</h3>
+          <p>Find any entry fast, or filter the whole list down to a single category.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">◧</div>
+          <h3>Budgets that warn you</h3>
+          <p>Set a limit per category and see it flagged the moment you're close to going over.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">↺</div>
+          <h3>Recurring detection</h3>
+          <p>SpendLens notices charges that repeat every month, so subscriptions stop hiding in plain sight.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⬇</div>
+          <h3>CSV export</h3>
+          <p>Pull your full expense history into a spreadsheet whenever you need it, in one click.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="twin-teaser">
+    <div class="wrap">
+      <div class="teaser-card">
+        <div class="teaser-text">
+          <div class="section-eyebrow teal">Also available</div>
+          <h3>Meet your Digital Twin</h3>
+          <p>A live avatar of your financial health, built from the same numbers already sitting in your ledger. It shifts color and mood as you spend, holds a health score that moves with your budgets, and tracks a streak for every day you stay on target — no extra setup, no separate account, just your data given a face.</p>
+        
+    </div>
+  </section>
+
+
+  <section class="steps" id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="section-eyebrow">Getting started</div>
+        <h2>Three steps to your first insight</h2>
+      </div>
+      <div class="step-list">
+        <div class="step">
+          <div class="step-num">01</div>
+          <h3>Create an account</h3>
+          <p>Pick a username and password. No card, no email verification loop.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <h3>Log an expense or two</h3>
+          <p>Title, amount, category, date. Ten seconds per entry, editable any time.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <h3>Read your dashboard</h3>
+          <p>Charts and summary cards update instantly — no refresh, no waiting on a report.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <div class="wrap">
+      <div class="cta-card">
+        <h2>Start tracking in the next minute</h2>
+        <p>It's free, it's fast, and your first chart is one expense away.</p>
+        <div class="cta-actions">
+          <a href="/register" class="btn btn-primary btn-lg">Create free account</a>
+          <a href="/login" class="btn btn-ghost btn-lg">I already have an account</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="dev-modal-overlay" id="devModalOverlay" onclick="if(event.target===this)closeDevModal()">
+    <div class="dev-modal">
+      <button class="dev-modal-close" onclick="closeDevModal()" aria-label="Close">×</button>
+      <div class="section-eyebrow">Behind SpendLens</div>
+      <h2 style="font-size:26px;color:var(--white);font-weight:700;margin-bottom:24px;">About the developer</h2>
+      <div class="dev-card">
+        <div class="dev-profile">
+          <!-- EDIT: replace this placeholder circle with your photo (see comment in the CSS above) -->
+          <div class="dev-avatar">Your<br/>photo</div>
+          <div>
+            <!-- EDIT: your name -->
+            <div class="dev-name">Your Name Here</div>
+            <!-- EDIT: your role / title -->
+            <div class="dev-role">Full-Stack Developer &amp; DevSecOps Engineer</div>
+            <!-- EDIT: a short bio, 2-3 sentences about you -->
+            <p class="dev-bio">Write a short bio here — who you are, what you build, and what you're focused on right now.</p>
+            <div class="dev-links">
+              <!-- EDIT: replace with your actual GitHub profile, LinkedIn, email, etc. -->
+              <a href="https://github.com/Hemanthmahendrakar" class="pill-link" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--text);text-decoration:none;border:1px solid var(--border);padding:8px 14px;border-radius:8px;">GitHub ↗</a>
+              <a href="#" class="pill-link" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--text);text-decoration:none;border:1px solid var(--border);padding:8px 14px;border-radius:8px;">LinkedIn ↗</a>
+              <a href="mailto:you@example.com" class="pill-link" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--text);text-decoration:none;border:1px solid var(--border);padding:8px 14px;border-radius:8px;">Email</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- EDIT: replace with your actual skills -->
+        <div class="dev-skills">
+          <span class="dev-skill-tag">JavaScript</span>
+          <span class="dev-skill-tag">Node.js</span>
+          <span class="dev-skill-tag">React</span>
+          <span class="dev-skill-tag">Docker</span>
+          <span class="dev-skill-tag">Kubernetes</span>
+          <span class="dev-skill-tag">CI/CD</span>
+          <span class="dev-skill-tag">AWS</span>
+          <span class="dev-skill-tag">DevSecOps</span>
+        </div>
+
+        <div class="dev-projects">
+          <div class="dev-project">
+            <div>
+              <h4>SpendLens</h4>
+              <!-- EDIT: describe your role/contribution on this project -->
+              <p>An expense and income tracker with category analytics, budgets, and a Digital Twin view of your financial health.</p>
+            </div>
+            <a href="#ledger" class="dev-project-link" onclick="closeDevModal()">This site ↑</a>
+          </div>
+          <div class="dev-project">
+            <div>
+              <h4>DevSecOps Project</h4>
+              <!-- EDIT: replace with your own description of this project -->
+              <p>A DevSecOps pipeline project — add a short description here of what it does and the security practices it covers.</p>
+            </div>
+            <a href="https://github.com/Hemanthmahendrakar/Devsecops-Project" class="dev-project-link" target="_blank" rel="noopener">View on GitHub ↗</a>
+          </div>
+          <!-- EDIT: duplicate a .dev-project block above to add more projects -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="wrap">
+      <span class="brand-name" style="font-family:'DM Mono',monospace;color:var(--text)">◈ SpendLens</span>
+      <span>© 2026 SpendLens. All rights reserved. Released under the MIT License.</span>
+    </div>
+  </footer>
+
+  <script>
+    function openDevModal(e) {
+      if (e) e.preventDefault();
+      document.getElementById('devModalOverlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+      history.pushState(null, null, '#developer');
+    }
+    function closeDevModal() {
+      document.getElementById('devModalOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+      history.pushState(null, null, window.location.pathname);
+    }
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeDevModal();
+    });
+    if (window.location.hash === '#developer') {
+      window.addEventListener('DOMContentLoaded', function () { openDevModal(); });
+    }
+  </script>
+
+</body>
+</html>
