@@ -300,48 +300,47 @@ Jenkins Pipeline
 | Monitoring | Prometheus & Grafana |
 
 ---
-
 # 📸 Screenshots
 
-## 🔐 Login Page
+## 🔐 Expense Tracker
 
-```
-Screenshots/Expesnse Tracker.png
-Screenshots/Digital.png
-```
+![Expense Tracker](Screenshots/Expesnse%20Tracker.png)
 
 ---
 
-## 📊 Architectuer
+## 🌐 Digital Twin Dashboard
 
-```
-Screenshots/project flow working model.jpg
-```
+![Digital Twin](Screenshots/Digital.png)
 
 ---
 
-## 🚀 Jenkins Pipeline
+## 🏗️ Project Architecture
 
-```
-Screenshots/Jenkins stage flow.png
-Screenshots/Jenkins Stage.png
-```
+![Architecture](Screenshots/project%20flow%20working%20model.jpg)
 
 ---
 
-## 🔍 SonarQube Analysis
+## 🚀 Jenkins Pipeline Flow
 
-```
-Screenshots/sonarqube report.png
-```
+![Jenkins Pipeline Flow](Screenshots/Jenkins%20stage%20flow.png)
 
 ---
 
-## 🚀 Argo CD
+## 📋 Jenkins Pipeline Stages
 
-```
-Screenshots/Kubernetes flow.png
-```
+![Jenkins Stages](Screenshots/Jenkins%20Stage.png)
+
+---
+
+## 🔍 SonarQube Report
+
+![SonarQube Report](Screenshots/sonarqube%20report.png)
+
+---
+
+## ☸ Kubernetes Deployment
+
+![Kubernetes](Screenshots/Kubernetes%20flow.png)
 ---
 
 # 📈 Future Enhancements
