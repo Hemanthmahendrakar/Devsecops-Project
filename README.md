@@ -303,8 +303,6 @@ Jenkins Pipeline
 
 # 📸 Screenshots
 
-> Replace the following placeholders with actual images.
-
 ## 🔐 Login Page
 
 ```
