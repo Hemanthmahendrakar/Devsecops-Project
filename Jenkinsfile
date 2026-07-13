@@ -2,150 +2,131 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_USERNAME = "hemanthkumarm3"
+        DATASET_PATH = "/opt/datasets/training_data.csv"
 
-        EXPENSE_IMAGE = "hemanthkumarm3/expense-tracker"
-        DIGITAL_IMAGE = "hemanthkumarm3/digital-twin"
-
-        IMAGE_TAG = "${BUILD_NUMBER}"
+        IMAGE_NAME = "YOUR_DOCKERHUB_USERNAME/fraud-detection-mlops"
+        IMAGE_TAG  = "v1"
     }
 
     stages {
 
-        stage('Checkout Source') {
+        stage('Checkout Code') {
             steps {
-                checkout scm
+                git branch: 'main',
+                    url: 'https://github.com/Hemanthmahendrakar/Fraud-Detection-Mlops-Pipeline.git'
             }
         }
 
-        stage('SonarQube Scan') {
-            steps {
-                script {
-                    def scannerHome = tool 'sonar-scanner'
-
-                    withSonarQubeEnv('sonarqube') {
-                        sh """
-                        ${scannerHome}/bin/sonar-scanner \
-                        -Dsonar.projectKey=Devsecops-Project \
-                        -Dsonar.projectName=Devsecops-Project \
-                        -Dsonar.sources=.
-                        """
-                    }
-                }
-            }
-        }
-
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: false
-                }
-            }
-        }
-
-        stage('Trivy File Scan') {
+        stage('Create Virtual Environment') {
             steps {
                 sh '''
-                trivy fs . > trivy-filesystem-report.txt
+                    python3 -m venv venv
+
+                    . venv/bin/activate
+
+                    python -m pip install --upgrade pip setuptools wheel
+
+                    pip install --no-cache-dir -r requirements.txt
                 '''
             }
         }
 
-        stage('Build Expense Tracker') {
+        stage('Debug Environment') {
             steps {
                 sh '''
-                docker build \
-                -t ${EXPENSE_IMAGE}:${IMAGE_TAG} \
-                -t ${EXPENSE_IMAGE}:latest \
-                -f Expense-Tracker-with-Analytics-Dashboard/Dockerfile \
-                Expense-Tracker-with-Analytics-Dashboard
+                    echo "========== DEBUG =========="
+
+                    pwd
+
+                    python3 --version
+
+                    echo ""
+                    echo "Dataset"
+
+                    echo "$DATASET_PATH"
+
+                    if [ ! -f "$DATASET_PATH" ]; then
+                        echo "Dataset Missing"
+                        exit 1
+                    fi
+
+                    ls -lh "$DATASET_PATH"
+
+                    echo ""
+
+                    mkdir -p models
+                    mkdir -p logs
+                    mkdir -p artifacts
+                    mkdir -p mlruns
+
+                    echo "Workspace"
+
+                    ls -al
                 '''
             }
         }
 
-        stage('Scan Expense Image') {
+        stage('Run MLOps Pipeline') {
             steps {
                 sh '''
-                trivy image ${EXPENSE_IMAGE}:${IMAGE_TAG}
+                    . venv/bin/activate
+
+                    mkdir -p models
+                    mkdir -p logs
+                    mkdir -p artifacts
+                    mkdir -p mlruns
+
+                    python pipeline.py
                 '''
             }
         }
 
-        stage('Build Digital Twin') {
+        stage('Build Docker Image') {
             steps {
                 sh '''
-                docker build \
-                -t ${DIGITAL_IMAGE}:${IMAGE_TAG} \
-                -t ${DIGITAL_IMAGE}:latest \
-                -f Digital-twin-of-expense-tracker/Dockerfile \
-                Digital-twin-of-expense-tracker
+                    docker build -t $IMAGE_NAME:$IMAGE_TAG .
                 '''
             }
         }
 
-        stage('Scan Digital Twin Image') {
+        stage('Push Docker Image') {
             steps {
-                sh '''
-                trivy image ${DIGITAL_IMAGE}:${IMAGE_TAG}
-                '''
-            }
-        }
-
-        stage('Push Docker Images') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                    )
+                ]) {
 
                     sh '''
-                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
-                    docker push ${EXPENSE_IMAGE}:${IMAGE_TAG}
-                    docker push ${EXPENSE_IMAGE}:latest
+                        docker push $IMAGE_NAME:$IMAGE_TAG
 
-                    docker push ${DIGITAL_IMAGE}:${IMAGE_TAG}
-                    docker push ${DIGITAL_IMAGE}:latest
-
-                    docker logout
+                        docker logout
                     '''
                 }
             }
         }
 
-        stage('Cleanup Local Images') {
-            steps {
-                sh '''
-                docker image rm ${EXPENSE_IMAGE}:${IMAGE_TAG} || true
-                docker image rm ${EXPENSE_IMAGE}:latest || true
-
-                docker image rm ${DIGITAL_IMAGE}:${IMAGE_TAG} || true
-                docker image rm ${DIGITAL_IMAGE}:latest || true
-                '''
-            }
-        }
     }
 
     post {
 
-        always {
-            archiveArtifacts artifacts: '*.txt', fingerprint: true
-        }
-
         success {
-            echo "=========================================="
-            echo " DevSecOps CI Pipeline Completed Successfully "
-            echo " Expense Tracker Image Pushed Successfully"
-            echo " Digital Twin Image Pushed Successfully"
-            echo "=========================================="
+            echo "===================================="
+            echo "Pipeline Executed Successfully"
+            echo "Docker Image: ${IMAGE_NAME}:${IMAGE_TAG}"
+            echo "===================================="
         }
 
         failure {
-            echo "=========================================="
-            echo " DevSecOps Pipeline Failed"
-            echo " Check Console Output"
-            echo "=========================================="
+            echo "Pipeline Failed"
+        }
+
+        always {
+            cleanWs()
         }
     }
 }
